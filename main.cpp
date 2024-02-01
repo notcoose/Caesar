@@ -67,22 +67,21 @@ string allUpper(string line){
     return uppercase;
 }
 
-void vigenèreEncrypt(string line, string key){
+void vigenereEncrypt(string line, string key){
     string encrypted = "";
-    string onlyAlpha = removeNonAlpha(line);
-    int nonAlphaCount = 0;
+    int num = 0;
 
     for(int i = 0; i < line.length(); i++){ //plaintext position in key
         if(isalpha(line.at(i))){
-            char keyChar = key.at(i % key.length());
-            encrypted += rot(onlyAlpha.at(i - nonAlphaCount), findIndexInAlphabet(keyChar));
+            char keyChar = key.at((i - num) % key.length());
+            encrypted += rot(line.at(i), findIndexInAlphabet(keyChar));
         }
         else{
             encrypted += line.at(i);
-            nonAlphaCount++;
+            num++;
         }
     }
-    
+
     cout << encrypted << endl;
 } 
 
@@ -110,13 +109,13 @@ int main() {
         else if(command[0] == 'D' || command[0] == 'd'){
 
         }
-        else if(command[0] == 'V' || command[0] == 'v'){
+        else if(command[0] == 'V' || command[0] == 'v'){ //DONE
             cout << "Enter text to encrypt:" << endl;
             getline(cin, text);
             cout << "Enter the Vigenère key:" << endl;
             getline(cin, key);  
 
-            vigenèreEncrypt(allUpper(text), removeNonAlpha(key));
+            vigenereEncrypt(allUpper(text), removeNonAlpha(key));
         }
         cout << endl;
     } while (!(command == "x" || command == "X")); 
