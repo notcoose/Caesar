@@ -8,37 +8,39 @@ using namespace std;
 
 const string ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+
+/*Outputs menu with letters for each functionality*/
 void printMenu() {
     cout << "Ciphers Menu" << endl;
     cout << "------------" << endl;
-    // Caesar Ciphers
     cout << "C - Encrypt with Caesar Cipher" << endl;
     cout << "D - Decrypt Caesar Cipher" << endl;
-    // Vigenere
     cout << "V - Encrypt with Vigenère" << endl;
-    // Utility
     cout << "X - Exit Program" << endl;
 }
 
-int findIndexInAlphabet(char c) { //DONE
+/*Returns the index of a letter in the alphabet*/
+int findIndexInAlphabet(char c) { 
     int index = ALPHABET.find(c);
 
     if(index != string::npos)
         return index;
-    else
-        return -1;
+    
+    return -1; //Defaults to -1 if there is no valid index
 }
 
-char rot(char c, int amount) { //DONE
+/*Returns the letter result of a letter being rotated by a given amount*/
+char rot(char c, int amount) {
     int charIndex = findIndexInAlphabet(c);
 
     if(charIndex != -1)
         c = ALPHABET.at((findIndexInAlphabet(c) + amount) % 26);
 
-    return c;
+    return c; //Returns the given char if it is not in alphabet
 }
 
-string rot(string line, int amount) { //DONE
+/*Returns the result of capitalizing and rotating every char by the given amount*/
+string rot(string line, int amount) { 
     string temp = "";
 
     for(char i: line)
@@ -47,6 +49,7 @@ string rot(string line, int amount) { //DONE
     return temp;
 }
 
+/*Returns the given string with only alphabetic characters*/
 string removeNonAlpha(string line){
     string onlyAlpha = "";
 
@@ -58,6 +61,7 @@ string removeNonAlpha(string line){
     return onlyAlpha;
 }
 
+/*Returns the given string with all letters capitalied*/
 string allUpper(string line){
     string uppercase = "";
 
@@ -67,6 +71,7 @@ string allUpper(string line){
     return uppercase;
 }
 
+/*Returns the boolean value of whether a string is in the dictionary*/
 bool inDict(vector<string>& dict, string word){
     for(string i: dict){
         if(word == i){
@@ -77,17 +82,20 @@ bool inDict(vector<string>& dict, string word){
     return false;
 }
 
+/*Preforms the Vingenere encryption and outputs the result*/
 void vigenereEncrypt(string line, string key){
     string encrypted = "";
     int num = 0;
 
-    for(int i = 0; i < line.length(); i++){ //plaintext position in key
+    for(int i = 0; i < line.length(); i++){ 
+        /*If char in line is alphabetical, finds position of char in line on key, 
+        and uses char result of rotating original char by the index of key char in alphabet*/
         if(isalpha(line.at(i))){
             char keyChar = key.at((i - num) % key.length());
             encrypted += rot(line.at(i), findIndexInAlphabet(keyChar));
         }
         else{
-            encrypted += line.at(i);
+            encrypted += line.at(i); //Doesn't change non-alphabetical chars
             num++;
         }
     }
@@ -99,10 +107,11 @@ int main() {
     string command, text, shift, key, word;
     vector<string> dict;
 
+    /*Opens file, puts every word into dictionary vector, then closes file*/
     ifstream file;
     file.open("dictionary.txt");
 
-    if(!file.is_open())
+    if(!file.is_open()) //Returns 1 if file didn't open
         return 1;
 
     while(!file.eof()){
@@ -112,6 +121,7 @@ int main() {
 
     file.close();
 
+    
     cout << "Welcome to Ciphers!" << endl;
     cout << "-------------------" << endl;
     cout << endl;
@@ -122,46 +132,54 @@ int main() {
         getline(cin, command);
         cout << endl;
 
-        if(command[0] == 'C' || command[0] == 'c'){ //DONE
-            cout << "Enter text to encrypt:" << endl;
+        /*If Caesar encrypt is desired, outputs the text rotated by desired amount*/
+        if(command[0] == 'C' || command[0] == 'c'){ 
+            cout << "Enter the text to encrypt:" << endl;
             getline(cin, text);
             cout << "Enter the number of characters to rotate by:" << endl;
             getline(cin, shift);
 
             cout << rot(text, stoi(shift));
         }
+        /*If Caesar decyrpt is desired, outputs "best match" decryptions, checking for valid word matches in dictionary to determine match*/
         else if(command[0] == 'D' || command[0] == 'd'){
             vector<string> words;
-            int start = 0, end = 0;
+            int start, end = 0;
 
-            cout << "Enter the text to Caesar-cipher decrypt:" << endl;
+            cout << "Enter the text to Caesar-cipher decrypt:";
             getline(cin, text);
 
-            for(int i = 0; i < text.length(); i++){ //Seperates text into words by spaces
-                if(text.at(i) == ' '){
-                    end = i;
-                    words.push_back(text.substr(start, (end - start)));
-                    start = end;
-                }
+            /*Seperates input text into vector of strings delimited by spaces*/
+            start = text.find_first_not_of(' ', end); //Start of substring, given by finding index of first char that is not a space starting from end
+            while(start != string::npos){
+                end = text.find(' ', start); //End of substring, given by finding index of next space after start
+                words.push_back(text.substr(start, (end - start))); //Adds substring to vector of words from user input
+                start = text.find_first_not_of(' ', end);
             }
 
-            for(string i: words){ //Removes non alpha chars from words
+            /*Removes any non-alphabetic characters and capitalizes*/
+            for(string i: words){ 
                 i = removeNonAlpha(i);
             }
 
-            for(int j = 0; j < 26; j++){ //Preforms actions for each possible shift
+            /*Performs the following actions for every possible shift*/
+            for(int j = 0; j <= 25; j++){ 
                 int count = 0;
 
-                for(string i: words){ //Shifts every word by one more every loop
-                    i = rot(text, 1);
+
+                /*Shifts every word in text by one more*/
+                for(string &i: words){ 
+                    i = rot(i, 1);
                 }
 
-                for(string i: words){ //Counts how many shifted words are in the dictionary
+                /*Counts how many shifted words are in the dictionary*/
+                for(string i: words){ 
                     if(inDict(dict, i))
                         count++;
                 }
 
-                if(count >= (words.size()/2)){ //If more than half of the words are in the dictionary, outputs the whole decrypted vector
+                /*If more than half of the words are in the dictionary, outputs entire vector decrypted*/
+                if(count > (words.size()/2)){ 
                     for(int i = 0; i < (words.size() - 1); i++){
                         cout << words.at(i) << " ";
                     }
@@ -170,13 +188,14 @@ int main() {
 
             }
         }
-        else if(command[0] == 'V' || command[0] == 'v'){ //DONE
+        /*If Vingenere encryption is desired, outputs the text encrypted with user given key*/
+        else if(command[0] == 'V' || command[0] == 'v'){ 
             cout << "Enter text to encrypt:" << endl;
             getline(cin, text);
             cout << "Enter the Vigenère key:" << endl;
             getline(cin, key);  
 
-            vigenereEncrypt(allUpper(text), removeNonAlpha(key));
+            vigenereEncrypt(allUpper(text), removeNonAlpha(key)); 
         }
         cout << endl;
     } while (!(command == "x" || command == "X")); 
