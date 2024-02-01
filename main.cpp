@@ -67,6 +67,16 @@ string allUpper(string line){
     return uppercase;
 }
 
+bool inDict(vector<string>& dict, string word){
+    for(string i: dict){
+        if(word == i){
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void vigenereEncrypt(string line, string key){
     string encrypted = "";
     int num = 0;
@@ -86,7 +96,21 @@ void vigenereEncrypt(string line, string key){
 } 
 
 int main() {
-    string command, text, shift, key;
+    string command, text, shift, key, word;
+    vector<string> dict;
+
+    ifstream file;
+    file.open("dictionary.txt");
+
+    if(!file.is_open())
+        return 1;
+
+    while(!file.eof()){
+        getline(file, text);
+        dict.push_back(text);
+    }
+
+    file.close();
 
     cout << "Welcome to Ciphers!" << endl;
     cout << "-------------------" << endl;
@@ -107,7 +131,44 @@ int main() {
             cout << rot(text, stoi(shift));
         }
         else if(command[0] == 'D' || command[0] == 'd'){
+            vector<string> words;
+            int start = 0, end = 0;
 
+            cout << "Enter the text to Caesar-cipher decrypt:" << endl;
+            getline(cin, text);
+
+            for(int i = 0; i < text.length(); i++){ //Seperates text into words by spaces
+                if(text.at(i) == ' '){
+                    end = i;
+                    words.push_back(text.substr(start, (end - start)));
+                    start = end;
+                }
+            }
+
+            for(string i: words){ //Removes non alpha chars from words
+                i = removeNonAlpha(i);
+            }
+
+            for(int j = 0; j < 26; j++){ //Preforms actions for each possible shift
+                int count = 0;
+
+                for(string i: words){ //Shifts every word by one more every loop
+                    i = rot(text, 1);
+                }
+
+                for(string i: words){ //Counts how many shifted words are in the dictionary
+                    if(inDict(dict, i))
+                        count++;
+                }
+
+                if(count >= (words.size()/2)){ //If more than half of the words are in the dictionary, outputs the whole decrypted vector
+                    for(int i = 0; i < (words.size() - 1); i++){
+                        cout << words.at(i) << " ";
+                    }
+                    cout << words.at(words.size() - 1) << endl;
+                }
+
+            }
         }
         else if(command[0] == 'V' || command[0] == 'v'){ //DONE
             cout << "Enter text to encrypt:" << endl;
