@@ -1,2 +1,3 @@
 # Caesar
-CS 251 Project 1
+
+Simple Caesar cipher encyrpytor, Caesar cipher decrypter, and Vigenère cipher encryptor 
